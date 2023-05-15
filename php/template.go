@@ -16,13 +16,9 @@ declare(strict_types=1);
 {{if $ns.Namespace}}
 namespace {{ $ns.Namespace }};
 {{end}}
-use parse\Http2Stream;
-use parse\Response;
-
 {{- range $n := $ns.Import}}
 use {{ $n }};
 {{- end}}
-
 
 class {{ .Service.Name | service }}
 {
@@ -52,37 +48,40 @@ class {{ .Service.Name | service }}
 	{{if $m.ClientStreaming }}
 		{{if $m.ServerStreaming }}
 	/**
-	*此处实现自己的业务逻辑
-	* DoubleStreaming
+    * DoubleStreaming如需结束流则设置{{ name $ns $m.OutputType }}->endStreaming = true;
+	* $request->metadata 获取metadata信息
 	* @param {{ name $ns $m.InputType }} $request
+	* @return \Generator
 	*/
-	public static function {{ $m.Name }}({{ name $ns $m.InputType }} $request) 
+	public static function {{ $m.Name }}({{ name $ns $m.InputType }} $request) : \Generator
     {
 	}
 		{{else}}
 	/**
-	*此处实现自己的业务逻辑
-	* ClientStreaming
+	* ClientStreaming 一旦返回{{ name $ns $m.OutputType }}对象即表示关闭当前客户端流
+	* $request->metadata 获取metadata信息
 	* @param {{ name $ns $m.InputType }} $request
+	* @return {{ name $ns $m.OutputType }}|null
 	*/
-	public static function {{ $m.Name }}({{ name $ns $m.InputType }} $request) : {{ name $ns $m.OutputType }}
+	public static function {{ $m.Name }}({{ name $ns $m.InputType }} $request) : ?{{ name $ns $m.OutputType }}
     {
 	}
 		{{end}}
 	{{else}}
 		{{if $m.ServerStreaming }}
 	/**
-	*此处实现自己的业务逻辑
 	* ServerStreaming
+	* $request->metadata 获取metadata信息
 	* @param {{ name $ns $m.InputType }} $request
+	* @return \Generator
 	*/
-	public static function {{ $m.Name }}({{ name $ns $m.InputType }} $request) 
+	public static function {{ $m.Name }}({{ name $ns $m.InputType }} $request):  \Generator
     {
 	}
 		{{else}}
 	/**
-	*此处实现自己的业务逻辑
 	* Simple
+	* $request->metadata 获取metadata信息
 	* @param {{ name $ns $m.InputType }} $request
 	* @return {{ name $ns $m.OutputType }}
 	*/
