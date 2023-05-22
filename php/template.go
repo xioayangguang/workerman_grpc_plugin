@@ -11,7 +11,6 @@ import (
 
 const phpBody = `<?php
 declare(strict_types=1);
-# source: {{ .File.Name }}  
 {{ $ns := .Namespace -}}
 {{if $ns.Namespace}}
 namespace {{ $ns.Namespace }};
@@ -19,9 +18,10 @@ namespace {{ $ns.Namespace }};
 {{- range $n := $ns.Import}}
 use {{ $n }};
 {{- end}}
-
+# source: {{ .File.Name }}  
 class {{ .Service.Name | service }}
 {
+     //DO NOT EDIT!
 	 public static $Streaming = [
 	{{- range $k,$v := .Ttype}}
 		"{{$k}}"=>[{{- range $kk,$vv := $v }}"{{ $vv }}",{{- end}}],
@@ -30,23 +30,24 @@ class {{ .Service.Name | service }}
 	
 	{{ $s := .Service -}}
 	{{ $f := .File -}}
+     //DO NOT EDIT!
 	 public static $Route  = [
 	{{- range $m := .Service.Method}}
 		"/{{ $f.Package }}.{{ $s.Name }}/{{ $m.Name }}" => [{{ $s.Name }}Service::class, "{{ $m.Name }}"],
 	{{- end}}
 	];
-
+     //DO NOT EDIT!
      public static $Parameter  = [
 	{{- range $m := .Service.Method}}
 		"/{{ $f.Package }}.{{ $s.Name }}/{{ $m.Name }}" => {{ name $ns $m.InputType }}::class,
 	{{- end}}
 	];
-
+     //DO NOT EDIT!
     public const NAME = "{{ .File.Package }}.{{ .Service.Name }}";
 
 {{- range $m := .Service.Method}}
-	{{if $m.ClientStreaming }}
-		{{if $m.ServerStreaming }}
+	{{- if $m.ClientStreaming }}
+	{{- if $m.ServerStreaming }}
 	/**
     * DoubleStreaming如需结束流则设置{{ name $ns $m.OutputType }}->endStreaming = true;
 	* $request->metadata 获取metadata信息
@@ -56,7 +57,7 @@ class {{ .Service.Name | service }}
 	public static function {{ $m.Name }}({{ name $ns $m.InputType }} $request) : \Generator
     {
 	}
-		{{else}}
+    {{- else}}
 	/**
 	* ClientStreaming 一旦返回{{ name $ns $m.OutputType }}对象即表示关闭当前客户端流
 	* $request->metadata 获取metadata信息
@@ -66,9 +67,9 @@ class {{ .Service.Name | service }}
 	public static function {{ $m.Name }}({{ name $ns $m.InputType }} $request) : ?{{ name $ns $m.OutputType }}
     {
 	}
-		{{end}}
-	{{else}}
-		{{if $m.ServerStreaming }}
+		{{- end -}}
+	{{- else -}}
+		{{- if $m.ServerStreaming }}
 	/**
 	* ServerStreaming
 	* $request->metadata 获取metadata信息
@@ -78,7 +79,7 @@ class {{ .Service.Name | service }}
 	public static function {{ $m.Name }}({{ name $ns $m.InputType }} $request):  \Generator
     {
 	}
-		{{else}}
+	{{- else}}
 	/**
 	* Simple
 	* $request->metadata 获取metadata信息
@@ -88,9 +89,9 @@ class {{ .Service.Name | service }}
 	public static function {{ $m.Name }}({{ name $ns $m.InputType }} $request): {{ name $ns $m.OutputType }} 
     {
 	}
-		{{end}}
+	{{end -}}
 {{end}}
-{{end -}}
+{{end}}
 }
 `
 
